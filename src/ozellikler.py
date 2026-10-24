@@ -50,11 +50,13 @@ def sanatci_kodla(egitim: pd.DataFrame, test: pd.DataFrame, m: float = 5,
 
     Her iki DataFrame'de de `ana_sanatci` ve `popularity` sütunları olmalı.
     """
-    genel_ort = egitim["popularity"].mean()
     egitim_kod = np.zeros(len(egitim))
     katlar = KFold(kat_sayisi, shuffle=True, random_state=random_state)
     for fit_idx, uygula_idx in katlar.split(egitim):
+        fit = egitim.iloc[fit_idx]
+        # Genel ortalama da yalnızca diğer katlardan; yoksa satırın kendi değeri
+        # yumuşatma terimi üzerinden kendi özelliğine sızar.
         egitim_kod[uygula_idx] = _yumusatilmis_ortalama(
-            egitim.iloc[fit_idx], egitim.iloc[uygula_idx], genel_ort, m)
-    test_kod = _yumusatilmis_ortalama(egitim, test, genel_ort, m)
+            fit, egitim.iloc[uygula_idx], fit["popularity"].mean(), m)
+    test_kod = _yumusatilmis_ortalama(egitim, test, egitim["popularity"].mean(), m)
     return egitim_kod, test_kod
