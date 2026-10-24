@@ -15,6 +15,7 @@
 ## Veri
 
 [Spotify Tracks Dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset) — Maharshi Pandya, Kaggle.
+Lisans: veritabanı [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/1-0/), içerik (şarkı/sanatçı bilgileri) © ilgili hak sahipleri. Ses özellikleri Spotify Web API'sinden alınmıştır.
 
 Veri bu repoda yer almaz. Çalıştırmak için CSV dosyasını Kaggle'dan indirip `data/dataset.csv` olarak kaydedin.
 
