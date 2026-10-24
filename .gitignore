@@ -1,0 +1,22 @@
+# Veri (Kaggle'dan indirilir, repoya yüklenmez)
+data/*
+!data/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Araçlar ve kişisel dosyalar
+.claude/
+PROJECT_STATUS.md
+.DS_Store
+.env
+.pytest_cache/
