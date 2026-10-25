@@ -178,7 +178,21 @@ def test_bellekte_kalmis_eski_modul_kendiliginden_yenilenir(monkeypatch):
 
     _ac()  # modüller bir kez yüklensin ve sürümleri kaydedilsin
     monkeypatch.delattr(src.arayuz, "md_kacis")
-    monkeypatch.setattr(src.arayuz, "_dosya_surumu", -1, raising=False)  # "dosya o zamandan beri değişti"
+    monkeypatch.delattr(src.arayuz, "_dosya_surumu", raising=False)  # canlıdaki gibi: sürümü hiç kaydedilmemiş
     at = AppTest.from_file(APP, default_timeout=120).run()
     assert not at.exception, at.exception
     assert hasattr(src.arayuz, "md_kacis")
+
+
+def test_degisen_modulu_ice_aktaran_moduller_de_yenilenir(monkeypatch):
+    """Yalnızca src/veri.py değişse bile, ondan `from ... import` ile ad alan src/oneri.py
+    da yenilenmeli; yoksa oneri eski adlara bağlı kalır."""
+    import src.oneri
+    import src.veri
+
+    _ac()
+    monkeypatch.setattr(src.veri, "_dosya_surumu", -1)  # yalnızca veri.py "değişti"
+    monkeypatch.delattr(src.oneri, "sadelestir")       # oneri'nin eski hali taklidi
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    assert not at.exception, at.exception
+    assert hasattr(src.oneri, "sadelestir")
