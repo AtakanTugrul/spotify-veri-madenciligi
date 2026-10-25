@@ -158,9 +158,27 @@ def test_yol_sinirdan_uzun_tutulmaz():
 
 
 def test_veri_dosyasi_yoksa_okunur_hata_gosteriliyor(monkeypatch, tmp_path):
-    # app.py, DEMO_YOLU'nu her çalıştırmada src.oneri'den okur; yolu var olmayan bir dosyaya çeviriyoruz
+    # app.py, DEMO_YOLU'nu her çalıştırmada src.oneri'den okur; yolu var olmayan bir dosyaya çeviriyoruz.
+    # Önce bir kez çalıştırıyoruz ki modül sürümleri kaydedilsin ve uygulama src.oneri'yi yeniden
+    # yükleyip yamayı silmesin.
+    _ac()
     monkeypatch.setattr("src.oneri.DEMO_YOLU", tmp_path / "yok.csv.gz")
     at = AppTest.from_file(APP, default_timeout=60).run()
     assert not at.exception
     assert "bulunamadı" in at.error[0].value
     assert not _dugmeler(at, "kart_")  # uygulama hata mesajından sonra durdu
+
+
+def test_bellekte_kalmis_eski_modul_kendiliginden_yenilenir(monkeypatch):
+    """Streamlit Cloud bir push'tan sonra app.py'yi yeni haliyle çalıştırır ama daha önce
+    yüklenmiş src modüllerini eski halleriyle bellekte tutabilir. Bunu taklit ediyoruz: yeni
+    eklenmiş bir fonksiyonu modülden siliyoruz (eski sürümde yokmuş gibi). Uygulama, dosyanın
+    değiştiğini fark edip modülü yeniden yüklemeli; ImportError vermemeli."""
+    import src.arayuz
+
+    _ac()  # modüller bir kez yüklensin ve sürümleri kaydedilsin
+    monkeypatch.delattr(src.arayuz, "md_kacis")
+    monkeypatch.setattr(src.arayuz, "_dosya_surumu", -1, raising=False)  # "dosya o zamandan beri değişti"
+    at = AppTest.from_file(APP, default_timeout=120).run()
+    assert not at.exception, at.exception
+    assert hasattr(src.arayuz, "md_kacis")

@@ -3,11 +3,37 @@
 Yerelde çalıştırma:  streamlit run app.py
 """
 
+import importlib
+import os
+
 import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
 from sklearn.decomposition import PCA
+
+import src.arayuz
+import src.oneri
+import src.ozellikler
+import src.veri
+
+
+def _modulu_guncelle(modul) -> int:
+    """Dosyası, yüklendiği andan sonra değişmiş bir modülü yeniden yükler; dosya sürümünü döndürür.
+
+    Streamlit Cloud bir push'tan sonra app.py'yi yeni haliyle çalıştırır ama daha önce
+    yüklenmiş src modüllerini bellekte eski halleriyle tutabiliyor. O durumda yeni kod eski
+    modülde olmayan bir adı arar ve ImportError verir.
+    """
+    surum = os.stat(modul.__file__).st_mtime_ns
+    if getattr(modul, "_dosya_surumu", None) != surum:
+        importlib.reload(modul)
+        modul._dosya_surumu = surum
+    return surum
+
+
+# Bağımlılık sırasıyla: önce veri/ozellikler, sonra onları içe aktaran oneri ve arayuz
+KOD_SURUMU = tuple(_modulu_guncelle(m) for m in (src.veri, src.ozellikler, src.oneri, src.arayuz))
 
 from src.arayuz import (ONERI_RENGI, RADAR_OZELLIKLERI, SORGU_RENGI, md_kacis, oneri_basligi,
                         oneri_karti, radar_svg, secili_sarki_karti, spotify_linki, svg_resim)
@@ -75,15 +101,16 @@ st.html(f"""
 """)
 
 
-@st.cache_resource
-def bulucu_yukle() -> BenzerSarkiBulucu:
+@st.cache_resource(max_entries=1)
+def bulucu_yukle(kod_surumu: tuple) -> BenzerSarkiBulucu:
+    """Kod değişince (kod_surumu) eski sınıfın önbellekteki örneği yerine yenisi kurulur."""
     return BenzerSarkiBulucu(pd.read_csv(DEMO_YOLU))
 
 
 @st.cache_data
-def harita_verisi() -> tuple[pd.DataFrame, pd.DataFrame, float]:
+def harita_verisi(kod_surumu: tuple) -> tuple[pd.DataFrame, pd.DataFrame, float]:
     """Tüm şarkıları PCA ile 2 boyuta indirir; şarkı koordinatlarını ve tür merkezlerini döndürür."""
-    b = bulucu_yukle()
+    b = bulucu_yukle(kod_surumu)
     pca = PCA(n_components=2, random_state=42)
     koordinat = pca.fit_transform(b.X)
     tum = b.sarkilar[["track_id", "track_name", "artists", "turler"]].assign(
@@ -108,7 +135,7 @@ if not DEMO_YOLU.exists():
              "`python -m scripts.demo_verisi_hazirla` ile üretebilirsiniz.")
     st.stop()
 
-bulucu = bulucu_yukle()
+bulucu = bulucu_yukle(KOD_SURUMU)
 sarkilar = bulucu.sarkilar
 tur_sayisi = sarkilar["turler"].str.split(", ").explode().nunique()
 
@@ -256,7 +283,7 @@ with oneriler_sekmesi:
                 'Benzerlik %: rastgele bir şarkıya olan tipik uzaklığa göre ne kadar yakın.</p>')
 
 with harita_sekmesi:
-    tum, merkezler, aciklanan = harita_verisi()
+    tum, merkezler, aciklanan = harita_verisi(KOD_SURUMU)
     arka_plan = tum.sample(6000, random_state=0)
     vurgu = pd.concat([
         tum[tum["track_id"].isin(sonuc["track_id"])].assign(rol="Öneri"),
