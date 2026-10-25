@@ -125,4 +125,4 @@ Web API'sinden alınmıştır.
 Ham veri bu repoda yer almaz. Demo, ham veriden türetilmiş bir veritabanı kullanır
 (`data/demo_sarkilar.csv.gz`: 81.056 şarkı, yalnızca öneri için gereken sütunlar). Bu dosya da ODbL ile lisanslıdır ve orijinalden farkları
 [data/VERI_LISANSI.md](data/VERI_LISANSI.md) içinde anlatılır. Kod [MIT lisansı](LICENSE) ile
-lisanslıdır. Bu proje Spotify ile ilişkili değildir.
+lisanslıdır; MIT lisansı veri dosyasını kapsamaz. Bu proje Spotify ile ilişkili değildir.
