@@ -4,6 +4,7 @@ arama → seçim → öneriden öneriye geçiş akışı çalışıyor mu?
 Streamlit'in kendi test aracı (AppTest) uygulamayı tarayıcı ve sunucu olmadan çalıştırır.
 """
 
+import pandas as pd
 import pytest
 
 from src.oneri import DEMO_YOLU
@@ -147,9 +148,13 @@ def test_uzun_yol_kisaltilarak_gosterilir():
 
 def test_yol_sinirdan_uzun_tutulmaz():
     at = _ac()
-    at.session_state.yol = [f"sahte{i}" for i in range(60)] + [at.session_state.secili]
+    secili = at.session_state.secili
+    gercek = [t for t in pd.read_csv(DEMO_YOLU, usecols=["track_id"])["track_id"].head(80) if t != secili]
+    at.session_state.yol = gercek[:60] + [secili]
     _yolda_olmayan_oneriye_gec(at)
+    assert not at.exception
     assert len(at.session_state.yol) == 50
+    assert len(_dugmeler(at, "yol_")) == 6
 
 
 def test_veri_dosyasi_yoksa_okunur_hata_gosteriliyor(monkeypatch, tmp_path):
