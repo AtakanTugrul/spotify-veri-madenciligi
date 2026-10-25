@@ -13,12 +13,18 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      # Bir sürüm başarısız olsa da diğerleri sonuna kadar çalışsın.
+      # 3.11 canlı demonun sürümü; 3.12 ve 3.13, 3.11 desteği bitince geçiş için.
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Bağımlılıkları kur
