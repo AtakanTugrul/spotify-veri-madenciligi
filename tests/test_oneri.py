@@ -87,3 +87,18 @@ def test_bilinmeyen_sarki_anlasilir_hata_verir(bulucu):
 def test_tekrarlayan_track_id_reddedilir(tablo):
     with pytest.raises(ValueError, match="tekil_sarkilar"):
         BenzerSarkiBulucu(tablo(sarki("t1"), sarki("t1", genre="dance")))
+
+
+def test_demo_tablosu_turleri_birlestirir_ve_surumleri_teke_indirir(tablo):
+    from src.oneri import DEMO_SUTUNLARI, demo_tablosu
+    temiz = tablo(
+        sarki("t1", artists="Tarkan", track_name="Şımarık", popularity=66, genre="turkish"),
+        sarki("t1", artists="Tarkan", track_name="Şımarık", popularity=66, genre="pop"),
+        sarki("derleme", artists="Tarkan", track_name="Şımarık", popularity=0, genre="dance"),
+        sarki("t2", artists="Ezhel", popularity=50, danceability=0.123456),
+    )
+    sonuc = demo_tablosu(temiz)
+    assert list(sonuc.columns) == DEMO_SUTUNLARI
+    assert sorted(sonuc["track_id"]) == ["t1", "t2"]
+    assert sonuc.set_index("track_id").at["t1", "turler"] == "pop, turkish"
+    assert sonuc.set_index("track_id").at["t2", "danceability"] == 0.1235

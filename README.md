@@ -17,7 +17,7 @@
 [Spotify Tracks Dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset) — Maharshi Pandya, Kaggle.
 Lisans: veritabanı [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/1-0/), içerik (şarkı/sanatçı bilgileri) © ilgili hak sahipleri. Ses özellikleri Spotify Web API'sinden alınmıştır.
 
-Veri bu repoda yer almaz. Çalıştırmak için CSV dosyasını Kaggle'dan indirip `data/dataset.csv` olarak kaydedin.
+Ham veri bu repoda yer almaz; notebook'ları çalıştırmak için CSV dosyasını Kaggle'dan indirip `data/dataset.csv` olarak kaydedin. Demo, ham veriden türetilmiş küçük bir dosya (`data/demo_sarkilar.csv.gz`, ODbL — bkz. [data/VERI_LISANSI.md](data/VERI_LISANSI.md)) kullanır ve indirme gerektirmez.
 
 ## Kurulum
 
@@ -27,10 +27,18 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Demoyu yerelde açmak için:
+
+```bash
+streamlit run app.py
+```
+
 ## Proje yapısı
 
 ```
-data/        Veri (repoda yok, Kaggle'dan indirilir)
+app.py       Streamlit demosu (benzer şarkı bulucu)
+data/        Ham veri (repoda yok) + küçük demo dosyası
+scripts/     Demo veri dosyasını üreten betik
 notebooks/   Analiz notebook'ları
 src/         Tekrar kullanılan Python kodu
 tests/       Testler

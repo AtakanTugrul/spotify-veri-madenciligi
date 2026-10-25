@@ -4,7 +4,25 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from src.veri import SES_OZELLIKLERI
+from src.ozellikler import surumleri_birlestir
+from src.veri import PROJE_KOKU, SES_OZELLIKLERI, tekil_sarkilar
+
+
+DEMO_YOLU = PROJE_KOKU / "data" / "demo_sarkilar.csv.gz"
+DEMO_SUTUNLARI = ["track_id", "track_name", "artists", "popularity", "turler"] + SES_OZELLIKLERI
+
+
+def demo_tablosu(temiz: pd.DataFrame) -> pd.DataFrame:
+    """Streamlit demosu için küçük, yeniden paylaşılabilir şarkı tablosu üretir.
+
+    `temiz` tür düzeyindeki veridir (`temizle` çıktısı). Her şarkının yer aldığı
+    tüm türler `turler` sütununda birleştirilir, sürümler birleştirilir ve yalnızca
+    bulucunun ihtiyaç duyduğu sütunlar tutulur.
+    """
+    turler = (temiz.groupby("track_id")["track_genre"]
+                   .agg(lambda t: ", ".join(sorted(set(t)))).rename("turler"))
+    sarkilar = surumleri_birlestir(tekil_sarkilar(temiz)).join(turler, on="track_id")
+    return sarkilar[DEMO_SUTUNLARI].round({o: 4 for o in SES_OZELLIKLERI})
 
 
 def _sanatcilar(metin: str) -> set[str]:
