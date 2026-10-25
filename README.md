@@ -1,12 +1,14 @@
 # Spotify Veri Madenciliği: Ses, Tür ve Popülerlik
 
 [![Testler](https://github.com/AtakanTugrul/spotify-veri-madenciligi/actions/workflows/testler.yml/badge.svg)](https://github.com/AtakanTugrul/spotify-veri-madenciligi/actions/workflows/testler.yml)
+[![Streamlit demo](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ses-ikizi.streamlit.app)
 
 81 bin Spotify şarkısının ses özellikleri (dans edilebilirlik, enerji, mutluluk, tempo…) üzerinde
 keşif, kümeleme, popülerlik tahmini ve içerik tabanlı öneri. Türk müziğine ayrıca bakıldı.
 
-**🎧 Canlı demo: Ses İkizi.** Bir şarkı seç, ses olarak en yakın şarkıları bul. Demo yayına
-alınınca linki buraya eklenecek. Yerelde çalıştırmak için: `streamlit run app.py`.
+**🎧 Canlı demo: [ses-ikizi.streamlit.app](https://ses-ikizi.streamlit.app)**. Bir şarkı seç, ses
+olarak en yakın şarkıları bul. Her öneri için benzerlik yüzdesi, "neden benziyor" etiketleri ve
+ses haritası gösterilir. Yerelde çalıştırmak için: `streamlit run app.py`.
 
 Analiz notebook'ları 89.578 tekil şarkıyla çalışır; hit tahmini ve demo, aynı şarkının
 farklı sürümleri birleştirildikten sonra kalan 81.056 şarkıyı kullanır.
