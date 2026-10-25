@@ -22,7 +22,7 @@ st.set_page_config(page_title="Ses İkizi · Benzer Şarkı Bulucu", page_icon="
 
 st.html(f"""
 <style>
-  .block-container {{ max-width: 1180px; padding-top: 2.2rem; }}
+  .block-container {{ max-width: 1180px; padding-top: 4.5rem; }}  /* Streamlit üst çubuğu ~3.75rem */
   .hero h1 {{ font-size: 2.6rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; line-height: 1.1; }}
   .hero h1 span {{ background: linear-gradient(90deg, {SORGU_RENGI}, {ONERI_RENGI});
                    -webkit-background-clip: text; background-clip: text; color: transparent; }}
