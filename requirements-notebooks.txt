@@ -1,5 +1,5 @@
 # Notebook'ları çalıştırmak için ek paketler
 -r requirements.txt
-matplotlib>=3.11
-seaborn>=0.13
-jupyter>=1.1
+matplotlib>=3.11,<4
+seaborn>=0.13,<0.14
+jupyter>=1.1,<2

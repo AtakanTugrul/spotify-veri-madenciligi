@@ -37,3 +37,12 @@ def test_filtreler_degisince_uygulama_hatasiz_calisiyor(uygulama):
     uygulama.slider(key="min_pop").set_value(80).run()
     uygulama.toggle(key="ayni_sanatci_haric").set_value(False).run()
     assert not uygulama.exception
+
+
+def test_veri_dosyasi_yoksa_okunur_hata_gosteriliyor(monkeypatch, tmp_path):
+    # app.py, DEMO_YOLU'nu her çalıştırmada src.oneri'den okur; yolu var olmayan bir dosyaya çeviriyoruz
+    monkeypatch.setattr("src.oneri.DEMO_YOLU", tmp_path / "yok.csv.gz")
+    at = AppTest.from_file(APP, default_timeout=60).run()
+    assert not at.exception
+    assert "bulunamadı" in at.error[0].value
+    assert not at.selectbox  # uygulama hata mesajından sonra durdu

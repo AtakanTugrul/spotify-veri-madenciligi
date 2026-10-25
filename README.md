@@ -10,6 +10,8 @@ keşif, kümeleme, popülerlik tahmini ve içerik tabanlı öneri. Türk müziğ
 olarak en yakın şarkıları bul. Her öneri için benzerlik yüzdesi, "neden benziyor" etiketleri ve
 ses haritası gösterilir. Yerelde çalıştırmak için: `streamlit run app.py`.
 
+[![Ses İkizi demosu](figures/demo_ses_ikizi.png)](https://ses-ikizi.streamlit.app)
+
 Analiz notebook'ları 89.578 tekil şarkıyla çalışır; hit tahmini ve demo, aynı şarkının
 farklı sürümleri birleştirildikten sonra kalan 81.056 şarkıyı kullanır.
 

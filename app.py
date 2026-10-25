@@ -236,5 +236,6 @@ with nasil_sekmesi:
         "**Ne kadar iyi?** Projedeki değerlendirmede önerilerin %11,5'i sorgu şarkısıyla aynı "
         "türden çıktı. Bu oran ölçekleme olmadan %6,8, rastgele seçimde %1. Ses benzerliği türü "
         "kısmen yakalıyor, ama dil ve kültür bilgisi ses özelliklerinde yok.\n\n"
-        "Kod, analiz notebook'ları ve testler projenin GitHub deposunda."
+        "Kod, analiz notebook'ları ve testler: "
+        "[github.com/AtakanTugrul/spotify-veri-madenciligi](https://github.com/AtakanTugrul/spotify-veri-madenciligi)"
     )
