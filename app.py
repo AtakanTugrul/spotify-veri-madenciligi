@@ -9,8 +9,8 @@ import pandas as pd
 import streamlit as st
 from sklearn.decomposition import PCA
 
-from src.arayuz import (ONERI_RENGI, RADAR_OZELLIKLERI, SORGU_RENGI, oneri_karti, radar_svg,
-                        secili_sarki_karti, spotify_linki, svg_resim)
+from src.arayuz import (ONERI_RENGI, RADAR_OZELLIKLERI, SORGU_RENGI, oneri_basligi, oneri_karti,
+                        radar_svg, secili_sarki_karti, spotify_linki, svg_resim)
 from src.oneri import DEMO_YOLU, BenzerSarkiBulucu
 
 ORNEKLER = ["Tarkan", "Ezhel", "Madrigal", "Sezen Aksu", "Bad Bunny", "Daft Punk"]
@@ -46,7 +46,6 @@ st.html(f"""
   .radar-kutu img {{ max-width: 100%; height: auto; }}
   .lejant {{ display: flex; gap: 1rem; justify-content: center; color: #9AA0AA; font-size: .82rem; }}
   .lejant i {{ display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .35rem; }}
-  .kartlar {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: .9rem; }}
   .kart {{ border: 1px solid #262B35; border-radius: 16px; padding: .95rem 1rem; background: #14171D;
            transition: border-color .15s, transform .15s; }}
   .kart:hover {{ border-color: {ONERI_RENGI}; transform: translateY(-2px); }}
@@ -67,6 +66,9 @@ st.html(f"""
   .cip-neden {{ background: rgba(61,214,198,.12); color: {ONERI_RENGI}; }}
   .cip-sessiz {{ background: transparent; border: 1px dashed #333946; color: #7D8490; }}
   .not {{ color: #7D8490; font-size: .82rem; }}
+  .oneri-basligi {{ color: #C9CDD3; font-size: 1rem; margin: .2rem 0 .4rem; }}
+  .oneri-basligi span {{ color: #9AA0AA; }}
+  .kart {{ margin-bottom: -.35rem; }}
   @media (max-width: 640px) {{ .hero h1 {{ font-size: 2rem; }} }}
 </style>
 """)
@@ -138,30 +140,79 @@ with st.sidebar:
     )
 
 
-def ornegi_uygula():
-    if st.session_state.ornek_secimi:
-        st.session_state.arama = st.session_state.ornek_secimi
+def sec(track_id: str, kaynak: str = "arama") -> None:
+    """Bir şarkıyı seçilen şarkı yapar ve gezilen yola ekler.
+
+    Yolda zaten olan bir şarkıya dönülürse yol oraya kadar kısaltılır (geri gitme).
+    Seçim aramadan gelmediyse (öneri kartı, geri, yol) eski arama sonuçları
+    kafa karıştırmasın diye arama kutusu temizlenir; karttan gelindiyse sayfa
+    başa kaydırılır.
+    """
+    yol = st.session_state.yol
+    st.session_state.yol = yol[:yol.index(track_id) + 1] if track_id in yol else yol + [track_id]
+    st.session_state.secili = track_id
+    st.session_state.yukari_kaydir = kaynak == "kart"
+    if kaynak != "arama":
+        st.session_state.arama = ""
 
 
-if "arama" not in st.session_state:
+def ornegi_uygula() -> None:
+    ornek = st.session_state.ornek_secimi
+    if ornek:
+        st.session_state.arama = ornek
+        sec(bulucu.ara(ornek, n=1)["track_id"].iloc[0])
+        st.session_state.ornek_secimi = None  # hap düğmeler gibi davransın, seçili kalmasın
+
+
+if "secili" not in st.session_state:
     st.session_state.arama = ORNEKLER[0]
+    st.session_state.secili = bulucu.ara(ORNEKLER[0], n=1)["track_id"].iloc[0]
+    st.session_state.yol = [st.session_state.secili]
 
 arama_sol, arama_sag = st.columns([2, 3], vertical_alignment="bottom")
-arama_sol.text_input("Şarkı veya sanatçı ara", key="arama", placeholder="ör. Şımarık, Ezhel, Daft Punk")
+arama_sol.text_input("Şarkı veya sanatçı ara", key="arama", type="search", live="300ms",
+                     placeholder="ör. simarik, maneskin, daft punk")
 arama_sag.pills("Hızlı dene", ORNEKLER, key="ornek_secimi", on_change=ornegi_uygula)
 
-adaylar = bulucu.ara(st.session_state.arama, n=40)
-if adaylar.empty:
-    st.info("Eşleşen şarkı bulunamadı. Başka bir ad veya sanatçı deneyin.")
-    st.stop()
+adaylar = bulucu.ara(st.session_state.arama, n=6)
+if st.session_state.arama.strip():
+    if adaylar.empty:
+        st.caption("Eşleşen şarkı bulunamadı. Başka bir ad ya da sanatçı deneyin.")
+    else:
+        with st.container(horizontal=True, gap="small", key="aday_listesi"):
+            for aday in adaylar.itertuples():
+                secili_mi = aday.track_id == st.session_state.secili
+                st.button(f"{aday.track_name} — {aday.artists.replace(';', ', ')}",
+                          key=f"aday_{aday.track_id}", on_click=sec, args=(aday.track_id,),
+                          type="primary" if secili_mi else "secondary", icon=":material/music_note:")
 
-aday_tablosu = adaylar.set_index("track_id")
-secim = st.selectbox(
-    "Şarkı", aday_tablosu.index.tolist(), label_visibility="collapsed",
-    format_func=lambda t: f"{aday_tablosu.at[t, 'track_name']} — "
-                          f"{aday_tablosu.at[t, 'artists'].replace(';', ', ')}")
-sorgu = aday_tablosu.loc[secim]
+secim = st.session_state.secili
+sorgu = bulucu.sarki(secim)
 sonuc = bulucu.benzerler(secim, n=n, ayni_sanatci_haric=ayni_sanatci_haric, min_populerlik=min_pop)
+
+if st.session_state.pop("yukari_kaydir", False):
+    # Karttan yeni şarkıya geçilince sayfanın başındaki oynatıcıya dön (betik sabit, kullanıcı girdisi yok)
+    st.html("""<script>
+      setTimeout(() => {
+        document.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"]')
+          .forEach(e => e.scrollTo({top: 0, behavior: "smooth"}));
+        window.scrollTo({top: 0, behavior: "smooth"});
+      }, 80);
+    </script>""", unsafe_allow_javascript=True)
+
+yol = st.session_state.yol
+if len(yol) > 1:
+    with st.container(horizontal=True, gap="small", vertical_alignment="center", key="gezilen_yol"):
+        st.button("Geri", key="geri", icon=":material/arrow_back:", on_click=sec, args=(yol[-2], "yol"))
+        st.caption("Gezdiğin yol:", width="content")
+        gosterilen = yol[-6:]
+        if len(yol) > len(gosterilen):
+            st.caption("…", width="content")
+        for i, t in enumerate(gosterilen):
+            if i:
+                st.caption("→", width="content")
+            st.button(bulucu.sarki(t)["track_name"], key=f"yol_{t}", type="tertiary", on_click=sec, args=(t, "yol"),
+                      disabled=t == secim)
 
 st.write("")
 sol, sag = st.columns([3, 2], gap="large")
@@ -187,13 +238,20 @@ with oneriler_sekmesi:
     if sonuc.empty:
         st.info("Bu filtrelerle öneri kalmadı. En az popülerliği düşürmeyi deneyin.")
     else:
-        kartlar = "".join(
-            oneri_karti(i, satir, profil(sorgu), bulucu.ortak_ozellikler(secim, satir["track_id"]))
-            for i, satir in enumerate(sonuc.to_dict("records"), start=1))
-        st.html(f'<div class="kartlar">{kartlar}</div>')
-        st.html('<p class="not">Mini radarda turuncu seçilen şarkı, turkuaz öneri. '
-                '↑/↓ etiketleri iki şarkının <i>birlikte</i> belirgin şekilde yüksek/düşük olduğu '
-                'özellikleri gösterir. Benzerlik %: rastgele bir şarkıya olan tipik uzaklığa göre ne kadar yakın.</p>')
+        st.html(oneri_basligi(sorgu.to_dict(), len(sonuc)))
+        satirlar = sonuc.to_dict("records")
+        for bas_i in range(0, len(satirlar), 3):
+            for sutun, (i, satir) in zip(st.columns(3), enumerate(satirlar[bas_i:bas_i + 3], start=bas_i + 1)):
+                with sutun:
+                    st.html(oneri_karti(i, satir, profil(sorgu),
+                                        bulucu.ortak_ozellikler(secim, satir["track_id"])))
+                    st.button("Dinle ve ikizlerini bul", key=f"kart_{satir['track_id']}",
+                              icon=":material/play_arrow:", width="stretch",
+                              on_click=sec, args=(satir["track_id"], "kart"))
+        st.html('<p class="not">Bir öneriye geçince o şarkı yukarıda çalınır ve onun ses ikizleri '
+                'listelenir. Mini radarda turuncu seçilen şarkı, turkuaz öneri. ↑/↓ etiketleri iki '
+                'şarkının <i>birlikte</i> belirgin şekilde yüksek/düşük olduğu özellikleri gösterir. '
+                'Benzerlik %: rastgele bir şarkıya olan tipik uzaklığa göre ne kadar yakın.</p>')
 
 with harita_sekmesi:
     tum, merkezler, aciklanan = harita_verisi()

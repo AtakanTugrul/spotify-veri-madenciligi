@@ -1,7 +1,7 @@
 import pytest
 
 from conftest import sarki
-from src.oneri import BenzerSarkiBulucu
+from src.oneri import BenzerSarkiBulucu, sadelestir
 
 
 @pytest.fixture
@@ -131,3 +131,38 @@ def test_filtreler_herkesi_elerse_bos_sonuc_doner(bulucu):
     sonuc = bulucu.benzerler("sorgu", n=10, min_populerlik=100)
     assert sonuc.empty
     assert {"uzaklik", "benzerlik"} <= set(sonuc.columns)
+
+
+
+@pytest.mark.parametrize("ham, sade", [
+    ("Måneskin", "maneskin"),
+    ("ŞIMARIK", "simarik"),
+    ("Şımarık", "simarik"),
+    ("İstanbul", "istanbul"),
+    ("Beyoncé", "beyonce"),
+    ("Røyksopp", "royksopp"),
+    ("Straße", "strasse"),
+    ("  Sezen   Aksu ", "sezen aksu"),
+])
+def test_sadelestir_harf_isaretlerini_ve_buyuk_harfi_kaldirir(ham, sade):
+    assert sadelestir(ham) == sade
+
+
+@pytest.mark.parametrize("sorgu", ["maneskin", "MANESKIN", "Måneskin", "beggin"])
+def test_ara_harf_isaretlerine_duyarsiz(tablo, sorgu):
+    bulucu = BenzerSarkiBulucu(tablo(
+        sarki("m", artists="Måneskin", track_name="Beggin'"),
+        sarki("t", artists="Tarkan", track_name="Şımarık"),
+    ))
+    assert bulucu.ara(sorgu)["track_id"].tolist() == ["m"]
+
+
+def test_ara_turkce_karakter_yazmadan_bulur(bulucu):
+    assert bulucu.ara("simarik")["track_id"].tolist() == ["sorgu"]
+    assert bulucu.ara("SIMARIK")["track_id"].tolist() == ["sorgu"]
+
+
+def test_sarki_satiri_dondurur_bilinmeyende_hata_verir(bulucu):
+    assert bulucu.sarki("ikiz")["track_name"] == "Adhiya"
+    with pytest.raises(KeyError, match="bulunamadı"):
+        bulucu.sarki("yok")

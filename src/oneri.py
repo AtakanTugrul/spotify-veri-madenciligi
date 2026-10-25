@@ -1,5 +1,7 @@
 """Ses özelliklerine göre benzer şarkı bulucu (notebook ve Streamlit demosu kullanır)."""
 
+import unicodedata
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -25,6 +27,21 @@ def demo_tablosu(temiz: pd.DataFrame) -> pd.DataFrame:
     return sarkilar[DEMO_SUTUNLARI].round({o: 4 for o in SES_OZELLIKLERI})
 
 
+# Ayrıştırmayla (NFKD) sadeleşmeyen harfler elle eşlenir; Türkçe I/İ/ı'nın hepsi "i" olur
+_OZEL_HARFLER = str.maketrans({"ı": "i", "I": "i", "İ": "i", "ø": "o", "Ø": "o", "æ": "ae", "Æ": "ae",
+                               "œ": "oe", "Œ": "oe", "ß": "ss", "đ": "d", "Đ": "d", "ł": "l", "Ł": "l"})
+
+
+def sadelestir(metin: str) -> str:
+    """Aramada kullanılan sade biçim: küçük harf, harf işaretleri yok, tek boşluk.
+
+    "Måneskin" → "maneskin", "ŞIMARIK" → "simarik", "Beyoncé" → "beyonce".
+    """
+    ayrik = unicodedata.normalize("NFKD", str(metin).translate(_OZEL_HARFLER))
+    isaretsiz = "".join(h for h in ayrik if not unicodedata.combining(h))
+    return " ".join(isaretsiz.casefold().split())
+
+
 def _sanatcilar(metin: str) -> set[str]:
     return {s.strip().lower() for s in str(metin).split(";") if s.strip()}
 
@@ -42,17 +59,29 @@ class BenzerSarkiBulucu:
         self.olcekleyici = StandardScaler()
         self.X = self.olcekleyici.fit_transform(self.sarkilar[self.ozellikler])
         self._konum = pd.Series(self.sarkilar.index, index=self.sarkilar["track_id"])
+        self._sade_ad = self.sarkilar["track_name"].map(sadelestir)
+        self._sade_sanatci = self.sarkilar["artists"].map(sadelestir)
         if self._konum.index.duplicated().any():
             raise ValueError("Her track_id yalnızca bir kez geçmeli (önce tekil_sarkilar kullanın).")
 
     def ara(self, metin: str, n: int = 10) -> pd.DataFrame:
-        """Şarkı adında veya sanatçıda `metin` geçen şarkıları popülerliğe göre sıralar."""
-        metin = metin.strip().lower()
+        """Şarkı adında veya sanatçıda `metin` geçen şarkıları popülerliğe göre sıralar.
+
+        Büyük/küçük harfe ve harf işaretlerine duyarsızdır: "maneskin" Måneskin'i,
+        "simarik" Şımarık'ı bulur.
+        """
+        metin = sadelestir(metin)
         if not metin:
             return self.sarkilar.iloc[0:0]
-        eslesme = (self.sarkilar["track_name"].str.lower().str.contains(metin, regex=False)
-                   | self.sarkilar["artists"].str.lower().str.contains(metin, regex=False))
+        eslesme = (self._sade_ad.str.contains(metin, regex=False)
+                   | self._sade_sanatci.str.contains(metin, regex=False))
         return self.sarkilar[eslesme].nlargest(n, "popularity")
+
+    def sarki(self, track_id: str) -> pd.Series:
+        """Tek bir şarkının satırı; bilinmeyen kimlikte KeyError."""
+        if track_id not in self._konum.index:
+            raise KeyError(f"Şarkı bulunamadı: {track_id}")
+        return self.sarkilar.iloc[self._konum[track_id]]
 
     def benzerler(self, track_id: str, n: int = 10, ayni_sanatci_haric: bool = True,
                   min_populerlik: int = 0) -> pd.DataFrame:

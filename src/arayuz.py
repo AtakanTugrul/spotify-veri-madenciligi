@@ -124,6 +124,14 @@ def secili_sarki_karti(sarki: dict) -> str:
 </div>"""
 
 
+def oneri_basligi(sarki: dict, adet: int) -> str:
+    """Önerilerin hangi şarkıya göre yapıldığını söyleyen başlık."""
+    ad = escape(str(sarki["track_name"]))
+    sanatci = escape(str(sarki["artists"]).replace(";", ", "))
+    return (f'<p class="oneri-basligi"><b>{ad}</b> <span>({sanatci})</span> ile ses olarak '
+            f'en çok benzeşen {adet} şarkı</p>')
+
+
 def oneri_karti(sira: int, sarki: dict, sorgu_profili: dict[str, float],
                 ortaklar: list[tuple[str, int]]) -> str:
     """Tek bir öneriyi kart olarak çizer: ad, sanatçı, benzerlik, türler, nedenler, mini radar."""

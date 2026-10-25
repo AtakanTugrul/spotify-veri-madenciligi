@@ -8,7 +8,9 @@ keşif, kümeleme, popülerlik tahmini ve içerik tabanlı öneri. Türk müziğ
 
 **🎧 Canlı demo: [ses-ikizi.streamlit.app](https://ses-ikizi.streamlit.app)**. Bir şarkı seç, ses
 olarak en yakın şarkıları bul. Her öneri için benzerlik yüzdesi, "neden benziyor" etiketleri ve
-ses haritası gösterilir. Yerelde çalıştırmak için: `streamlit run app.py`.
+ses haritası gösterilir. Bir öneriye geçince onun da ses ikizleri listelenir; böylece şarkıdan
+şarkıya bir keşif yolu çıkar. Arama yazdıkça daralır ve harf işaretlerine duyarsızdır ("maneskin"
+Måneskin'i, "simarik" Şımarık'ı bulur). Yerelde çalıştırmak için: `streamlit run app.py`.
 
 [![Ses İkizi demosu](figures/demo_ses_ikizi.png)](https://ses-ikizi.streamlit.app)
 

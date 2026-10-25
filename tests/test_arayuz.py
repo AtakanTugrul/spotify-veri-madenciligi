@@ -1,6 +1,6 @@
 import base64
 
-from src.arayuz import (RADAR_OZELLIKLERI, neden_cipleri, oneri_karti, radar_svg,
+from src.arayuz import (RADAR_OZELLIKLERI, neden_cipleri, oneri_basligi, oneri_karti, radar_svg,
                         secili_sarki_karti, spotify_linki, svg_resim)
 
 PROFIL = {a: 0.5 for a in RADAR_OZELLIKLERI}
@@ -70,3 +70,9 @@ def test_secili_sarki_karti_metinleri_kacislar_ve_degerleri_gosterir():
     assert "<script>" not in kart and "<b>" not in kart and "<i>" not in kart
     assert "&lt;script&gt;" in kart and "Ezhel, &lt;b&gt;Ceg&lt;/b&gt;" in kart
     assert ">97<" in kart and "-8.7" in kart and ">58<" in kart
+
+
+def test_oneri_basligi_sorgu_sarkisini_kacislayarak_yazar():
+    baslik = oneri_basligi(_oneri(track_name="<b>Kuzu</b>", artists="Tarkan;X"), 8)
+    assert "&lt;b&gt;Kuzu&lt;/b&gt;" in baslik and "<b>Kuzu" not in baslik
+    assert "Tarkan, X" in baslik and "8 şarkı" in baslik
