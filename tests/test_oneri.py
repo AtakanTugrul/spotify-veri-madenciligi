@@ -102,3 +102,26 @@ def test_demo_tablosu_turleri_birlestirir_ve_surumleri_teke_indirir(tablo):
     assert sorted(sonuc["track_id"]) == ["t1", "t2"]
     assert sonuc.set_index("track_id").at["t1", "turler"] == "pop, turkish"
     assert sonuc.set_index("track_id").at["t2", "danceability"] == 0.1235
+
+
+def test_benzerlik_sifir_bir_arasinda_ve_uzaklikla_ters_sirali(bulucu):
+    sonuc = bulucu.benzerler("sorgu", n=10)
+    assert sonuc["benzerlik"].between(0, 1).all()
+    assert sonuc["benzerlik"].is_monotonic_decreasing
+
+
+def test_ortak_ozellikler_ayni_yonde_belirgin_olanlari_verir(tablo):
+    satirlar = [sarki("a", artists="A", energy=0.9, acousticness=0.1, valence=0.9),
+                sarki("b", artists="B", energy=0.9, acousticness=0.1, valence=0.1)]
+    satirlar += [sarki(f"d{i}", artists=f"D{i}", energy=0.4, acousticness=0.6, valence=0.5)
+                 for i in range(8)]
+    bulucu = BenzerSarkiBulucu(tablo(*satirlar))
+    sonuc = dict(bulucu.ortak_ozellikler("a", "b"))
+    assert sonuc == {"energy": 1, "acousticness": -1}  # valence zıt yönde: sayılmaz
+
+
+def test_ortak_ozellikler_en_fazla_sinirini_uygular(tablo):
+    satirlar = [sarki(c, artists=c, energy=0.9, acousticness=0.1, valence=0.9) for c in "ab"]
+    satirlar += [sarki(f"d{i}", artists=f"D{i}") for i in range(8)]
+    bulucu = BenzerSarkiBulucu(tablo(*satirlar))
+    assert len(bulucu.ortak_ozellikler("a", "b", en_fazla=2)) == 2

@@ -78,4 +78,20 @@ class BenzerSarkiBulucu:
 
         secilen = np.flatnonzero(aday)
         en_yakin = secilen[np.argsort(uzaklik[secilen], kind="stable")[:n]]
-        return self.sarkilar.iloc[en_yakin].assign(uzaklik=uzaklik[en_yakin])
+        # Benzerlik: rastgele bir şarkıya olan tipik (medyan) uzaklığa göre ne kadar yakın
+        benzerlik = np.clip(1 - uzaklik[en_yakin] / np.median(uzaklik), 0, 1)
+        return self.sarkilar.iloc[en_yakin].assign(uzaklik=uzaklik[en_yakin], benzerlik=benzerlik)
+
+    def ortak_ozellikler(self, track_id: str, diger_id: str, esik: float = 0.75,
+                         en_fazla: int = 3) -> list[tuple[str, int]]:
+        """İki şarkının birlikte belirgin şekilde yüksek (+1) ya da düşük (-1) olduğu
+        özellikleri, en belirgin olandan başlayarak döndürür ("neden benziyor?").
+
+        Belirginlik ölçeklenmiş değerle ölçülür: ikisi de ortalamadan en az `esik`
+        standart sapma uzakta ve aynı yönde olmalı.
+        """
+        a, b = (self.X[self._konum[t]] for t in (track_id, diger_id))
+        ortak = (np.sign(a) == np.sign(b)) & (np.abs(a) >= esik) & (np.abs(b) >= esik)
+        guc = np.minimum(np.abs(a), np.abs(b))
+        sira = [i for i in np.argsort(-guc, kind="stable") if ortak[i]][:en_fazla]
+        return [(self.ozellikler[i], int(np.sign(a[i]))) for i in sira]
