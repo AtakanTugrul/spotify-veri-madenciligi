@@ -106,6 +106,24 @@ def neden_cipleri(ortaklar: list[tuple[str, int]]) -> str:
         for o, yon in ortaklar)
 
 
+def secili_sarki_karti(sarki: dict) -> str:
+    """Seçilen şarkının kartı: ad, sanatçı, türler ve tempo/popülerlik/ses yüksekliği."""
+    turler = "".join(f'<span class="cip">{escape(t.strip())}</span>'
+                     for t in str(sarki["turler"]).split(","))
+    return f"""
+<div class="secili">
+  <div class="etiket">Seçilen şarkı</div>
+  <h2>{escape(str(sarki["track_name"]))}</h2>
+  <div class="sanatci">{escape(str(sarki["artists"]).replace(";", ", "))}</div>
+  <div class="cipler">{turler}</div>
+  <div class="rakamlar">
+    <div class="rakam"><div class="k">Tempo</div><div class="v">{float(sarki["tempo"]):.0f}<small> BPM</small></div></div>
+    <div class="rakam"><div class="k">Popülerlik</div><div class="v">{int(sarki["popularity"])}</div></div>
+    <div class="rakam"><div class="k">Ses</div><div class="v">{float(sarki["loudness"]):.1f}<small> dB</small></div></div>
+  </div>
+</div>"""
+
+
 def oneri_karti(sira: int, sarki: dict, sorgu_profili: dict[str, float],
                 ortaklar: list[tuple[str, int]]) -> str:
     """Tek bir öneriyi kart olarak çizer: ad, sanatçı, benzerlik, türler, nedenler, mini radar."""

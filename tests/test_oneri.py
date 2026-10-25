@@ -125,3 +125,9 @@ def test_ortak_ozellikler_en_fazla_sinirini_uygular(tablo):
     satirlar += [sarki(f"d{i}", artists=f"D{i}") for i in range(8)]
     bulucu = BenzerSarkiBulucu(tablo(*satirlar))
     assert len(bulucu.ortak_ozellikler("a", "b", en_fazla=2)) == 2
+
+
+def test_filtreler_herkesi_elerse_bos_sonuc_doner(bulucu):
+    sonuc = bulucu.benzerler("sorgu", n=10, min_populerlik=100)
+    assert sonuc.empty
+    assert {"uzaklik", "benzerlik"} <= set(sonuc.columns)

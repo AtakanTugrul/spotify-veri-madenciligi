@@ -3,8 +3,6 @@
 Yerelde çalıştırma:  streamlit run app.py
 """
 
-from html import escape
-
 import altair as alt
 import numpy as np
 import pandas as pd
@@ -12,7 +10,7 @@ import streamlit as st
 from sklearn.decomposition import PCA
 
 from src.arayuz import (ONERI_RENGI, RADAR_OZELLIKLERI, SORGU_RENGI, oneri_karti, radar_svg,
-                        spotify_linki, svg_resim)
+                        secili_sarki_karti, spotify_linki, svg_resim)
 from src.oneri import DEMO_YOLU, BenzerSarkiBulucu
 
 ORNEKLER = ["Tarkan", "Ezhel", "Madrigal", "Sezen Aksu", "Bad Bunny", "Daft Punk"]
@@ -102,6 +100,11 @@ def bin_ayrac(sayi: int) -> str:
     return f"{sayi:,}".replace(",", ".")
 
 
+if not DEMO_YOLU.exists():
+    st.error("Demo veri dosyası bulunamadı (data/demo_sarkilar.csv.gz). "
+             "`python -m scripts.demo_verisi_hazirla` ile üretebilirsiniz.")
+    st.stop()
+
 bulucu = bulucu_yukle()
 sarkilar = bulucu.sarkilar
 tur_sayisi = sarkilar["turler"].str.split(", ").explode().nunique()
@@ -123,10 +126,10 @@ st.html(f"""
 
 with st.sidebar:
     st.subheader("Ayarlar")
-    n = st.slider("Öneri sayısı", 4, 24, 8, step=2)
-    min_pop = st.slider("En az popülerlik", 0, 80, 20,
+    n = st.slider("Öneri sayısı", 4, 24, 8, step=2, key="oneri_sayisi")
+    min_pop = st.slider("En az popülerlik", 0, 80, 20, key="min_pop",
                         help="Spotify popülerliği (0–100). Yükseltirseniz daha tanınır şarkılar gelir.")
-    ayni_sanatci_haric = st.toggle("Aynı sanatçıyı hariç tut", value=True)
+    ayni_sanatci_haric = st.toggle("Aynı sanatçıyı hariç tut", value=True, key="ayni_sanatci_haric")
     st.divider()
     st.caption(
         "Veri: [Spotify Tracks Dataset](https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset) "
@@ -163,19 +166,7 @@ sonuc = bulucu.benzerler(secim, n=n, ayni_sanatci_haric=ayni_sanatci_haric, min_
 st.write("")
 sol, sag = st.columns([3, 2], gap="large")
 with sol:
-    tur_cipleri = "".join(f'<span class="cip">{escape(t)}</span>' for t in sorgu.turler.split(", "))
-    st.html(f"""
-<div class="secili">
-  <div class="etiket">Seçilen şarkı</div>
-  <h2>{escape(sorgu.track_name)}</h2>
-  <div class="sanatci">{escape(sorgu.artists.replace(";", ", "))}</div>
-  <div class="cipler">{tur_cipleri}</div>
-  <div class="rakamlar">
-    <div class="rakam"><div class="k">Tempo</div><div class="v">{sorgu.tempo:.0f}<small> BPM</small></div></div>
-    <div class="rakam"><div class="k">Popülerlik</div><div class="v">{int(sorgu.popularity)}</div></div>
-    <div class="rakam"><div class="k">Ses</div><div class="v">{sorgu.loudness:.1f}<small> dB</small></div></div>
-  </div>
-</div>""")
+    st.html(secili_sarki_karti(sorgu.to_dict()))
     gomulu = spotify_linki(secim, embed=True)
     if gomulu:
         st.iframe(gomulu, height=152)
@@ -229,7 +220,7 @@ with harita_sekmesi:
                  alt.Tooltip("turler", title="Türler")])
     st.altair_chart((taban + tur_adlari + noktalar).properties(height=520)
                     .configure_view(strokeWidth=0).configure(background="transparent"))
-    st.html(f'<p class="not">Her gri nokta bir şarkı (81 binden 6 bin örnek). 9 ses özelliği PCA ile '
+    st.html(f'<p class="not">Her gri nokta bir şarkı ({bin_ayrac(len(tum))} şarkıdan {bin_ayrac(len(arka_plan))} örnek). 9 ses özelliği PCA ile '
             f'2 boyuta indirildi; bu iki boyut farkın yalnızca %{100 * aciklanan:.0f}\'ini taşıyor. '
             'Bu yüzden 2B\'de biraz uzak görünen bir öneri, 9 boyutta aslında çok yakın olabilir. '
             'Tür adları o türdeki şarkıların merkezini gösterir.</p>')

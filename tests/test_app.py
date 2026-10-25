@@ -34,6 +34,7 @@ def test_eslesmeyen_aramada_bilgi_mesaji_gosteriliyor(uygulama):
 
 def test_filtreler_degisince_uygulama_hatasiz_calisiyor(uygulama):
     uygulama.text_input[0].set_value("Daft Punk").run()
-    uygulama.slider[1].set_value(80).run()
-    uygulama.toggle[0].set_value(False).run()
+    uygulama.slider(key="min_pop").set_value(80).run()
+    uygulama.toggle(key="ayni_sanatci_haric").set_value(False).run()
     assert not uygulama.exception
+

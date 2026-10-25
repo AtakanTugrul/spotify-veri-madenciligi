@@ -1,4 +1,4 @@
-"""Ham Kaggle CSV'sinden Streamlit demosunun kullandığı küçük veri dosyasını üretir.
+"""Ham Kaggle CSV'sinden Streamlit demosunun kullandığı veri dosyasını üretir.
 
 Çalıştırma (proje kökünden):  python -m scripts.demo_verisi_hazirla
 """

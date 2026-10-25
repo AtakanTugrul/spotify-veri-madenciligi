@@ -1,4 +1,4 @@
-# Veri (ham CSV Kaggle'dan indirilir, repoya yüklenmez; yalnızca küçük demo dosyası repoda)
+# Veri (ham CSV Kaggle'dan indirilir, repoya yüklenmez; yalnızca türetilmiş demo dosyası repoda)
 data/*
 !data/.gitkeep
 !data/demo_sarkilar.csv.gz

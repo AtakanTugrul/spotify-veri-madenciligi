@@ -1,7 +1,7 @@
 import base64
 
-from src.arayuz import (RADAR_OZELLIKLERI, neden_cipleri, oneri_karti, radar_svg, spotify_linki,
-                        svg_resim)
+from src.arayuz import (RADAR_OZELLIKLERI, neden_cipleri, oneri_karti, radar_svg,
+                        secili_sarki_karti, spotify_linki, svg_resim)
 
 PROFIL = {a: 0.5 for a in RADAR_OZELLIKLERI}
 
@@ -62,3 +62,11 @@ def test_svg_resim_svgyi_base64_img_olarak_gomer():
     veri = img.split("base64,")[1].split('"')[0]
     assert base64.b64decode(veri).decode() == svg
     assert 'alt="a&quot;b"' in img
+
+
+def test_secili_sarki_karti_metinleri_kacislar_ve_degerleri_gosterir():
+    kart = secili_sarki_karti(_oneri(track_name="<script>x</script>", artists="Ezhel;<b>Ceg</b>",
+                                     turler="turkish, <i>pop</i>", tempo=97.4, loudness=-8.66))
+    assert "<script>" not in kart and "<b>" not in kart and "<i>" not in kart
+    assert "&lt;script&gt;" in kart and "Ezhel, &lt;b&gt;Ceg&lt;/b&gt;" in kart
+    assert ">97<" in kart and "-8.7" in kart and ">58<" in kart

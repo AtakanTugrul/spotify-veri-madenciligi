@@ -13,7 +13,7 @@ DEMO_SUTUNLARI = ["track_id", "track_name", "artists", "popularity", "turler"] +
 
 
 def demo_tablosu(temiz: pd.DataFrame) -> pd.DataFrame:
-    """Streamlit demosu için küçük, yeniden paylaşılabilir şarkı tablosu üretir.
+    """Streamlit demosu için şarkı düzeyinde, yeniden paylaşılabilir bir tablo üretir.
 
     `temiz` tür düzeyindeki veridir (`temizle` çıktısı). Her şarkının yer aldığı
     tüm türler `turler` sütununda birleştirilir, sürümler birleştirilir ve yalnızca

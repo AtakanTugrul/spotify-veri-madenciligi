@@ -1,10 +1,15 @@
 # Spotify Veri Madenciliği: Ses, Tür ve Popülerlik
 
+[![Testler](https://github.com/AtakanTugrul/spotify-veri-madenciligi/actions/workflows/testler.yml/badge.svg)](https://github.com/AtakanTugrul/spotify-veri-madenciligi/actions/workflows/testler.yml)
+
 81 bin Spotify şarkısının ses özellikleri (dans edilebilirlik, enerji, mutluluk, tempo…) üzerinde
 keşif, kümeleme, popülerlik tahmini ve içerik tabanlı öneri. Türk müziğine ayrıca bakıldı.
 
 **🎧 Canlı demo: Ses İkizi.** Bir şarkı seç, ses olarak en yakın şarkıları bul. Demo yayına
 alınınca linki buraya eklenecek. Yerelde çalıştırmak için: `streamlit run app.py`.
+
+Analiz notebook'ları 89.578 tekil şarkıyla çalışır; hit tahmini ve demo, aynı şarkının
+farklı sürümleri birleştirildikten sonra kalan 81.056 şarkıyı kullanır.
 
 ## Öne çıkan bulgular
 
@@ -26,7 +31,7 @@ etiketleri ise kümelere dağılıyor (%32–34). Bu etiketler bir ses tarifinde
 **3. Türk müziğinin ses ikizleri Fransız, dancehall ve hip-hop.** Benzer şarkı bulucuda Türk
 şarkılarına önerilen komşuların türlerine bakıldı. Fransız, dancehall, hip-hop, "sad" ve latino
 şarkıları rastgele beklenenden 2,3–2,5 kat sık çıkıyor. Sleep, metal, techno ve İran müziği
-ise en uzak türler (0,2 kat).
+ise en uzak türler (rastgele beklenenin 0,01–0,21 katı).
 
 ![Türk müziğinin ses ikizleri](figures/04_turk_ses_ikizleri.png)
 
@@ -88,7 +93,7 @@ tests/       pytest; sentetik veriyle çalışır, gerçek CSV gerekmez
 notebooks/   Analiz notebook'ları (01–04)
 figures/     Notebook'ların ürettiği grafikler
 scripts/     Demo veri dosyasını üreten betik
-data/        Ham veri (repoda yok) + küçük demo dosyası
+data/        Ham veri (repoda yok) + demo veri dosyası
 ```
 
 ## Kurulum
@@ -96,12 +101,13 @@ data/        Ham veri (repoda yok) + küçük demo dosyası
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pytest                      # testler
-streamlit run app.py        # demo
+pip install -r requirements.txt   # demo ve testler
+pytest
+streamlit run app.py
 ```
 
-Notebook'lar için ham CSV'yi Kaggle'dan indirip `data/dataset.csv` olarak kaydedin.
+Notebook'lar için ek paketleri kurun (`pip install -r requirements-notebooks.txt`) ve ham CSV'yi
+Kaggle'dan indirip `data/dataset.csv` olarak kaydedin.
 
 ## Veri ve lisans
 
@@ -110,6 +116,7 @@ Veritabanı [Open Database License (ODbL)](https://opendatacommons.org/licenses/
 lisanslı. İçerik (şarkı ve sanatçı bilgileri) © ilgili hak sahipleri. Ses özellikleri Spotify
 Web API'sinden alınmıştır.
 
-Ham veri bu repoda yer almaz. Demo, ham veriden türetilmiş küçük bir dosya kullanır
-(`data/demo_sarkilar.csv.gz`). Bu dosya da ODbL ile lisanslıdır ve orijinalden farkları
-[data/VERI_LISANSI.md](data/VERI_LISANSI.md) içinde anlatılır. Bu proje Spotify ile ilişkili değildir.
+Ham veri bu repoda yer almaz. Demo, ham veriden türetilmiş bir veritabanı kullanır
+(`data/demo_sarkilar.csv.gz`: 81.056 şarkı, yalnızca öneri için gereken sütunlar). Bu dosya da ODbL ile lisanslıdır ve orijinalden farkları
+[data/VERI_LISANSI.md](data/VERI_LISANSI.md) içinde anlatılır. Kod [MIT lisansı](LICENSE) ile
+lisanslıdır. Bu proje Spotify ile ilişkili değildir.
