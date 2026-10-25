@@ -30,8 +30,8 @@ etiketleri ise kümelere dağılıyor (%32–34). Bu etiketler bir ses tarifinde
 
 **3. Türk müziğinin ses ikizleri Fransız, dancehall ve hip-hop.** Benzer şarkı bulucuda Türk
 şarkılarına önerilen komşuların türlerine bakıldı. Fransız, dancehall, hip-hop, "sad" ve latino
-şarkıları rastgele beklenenden 2,3–2,5 kat sık çıkıyor. Sleep, metal, techno ve İran müziği
-ise en uzak türler (rastgele beklenenin 0,01–0,21 katı).
+şarkıları rastgele beklenenden 2,3–2,5 kat sık çıkıyor. Uyku müziği, grindcore,
+death/black metal ve İran müziği ise en uzak türler (rastgele beklenenin 0,01–0,21 katı).
 
 ![Türk müziğinin ses ikizleri](figures/04_turk_ses_ikizleri.png)
 

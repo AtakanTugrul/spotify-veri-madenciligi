@@ -37,4 +37,3 @@ def test_filtreler_degisince_uygulama_hatasiz_calisiyor(uygulama):
     uygulama.slider(key="min_pop").set_value(80).run()
     uygulama.toggle(key="ayni_sanatci_haric").set_value(False).run()
     assert not uygulama.exception
-
