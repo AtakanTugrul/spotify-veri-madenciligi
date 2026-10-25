@@ -9,10 +9,11 @@ import pandas as pd
 import streamlit as st
 from sklearn.decomposition import PCA
 
-from src.arayuz import (ONERI_RENGI, RADAR_OZELLIKLERI, SORGU_RENGI, oneri_basligi, oneri_karti,
-                        radar_svg, secili_sarki_karti, spotify_linki, svg_resim)
+from src.arayuz import (ONERI_RENGI, RADAR_OZELLIKLERI, SORGU_RENGI, md_kacis, oneri_basligi,
+                        oneri_karti, radar_svg, secili_sarki_karti, spotify_linki, svg_resim)
 from src.oneri import DEMO_YOLU, BenzerSarkiBulucu
 
+YOL_SINIRI = 50  # gezilen yolda tutulan en fazla şarkı (ekranda son 6'sı gösterilir)
 ORNEKLER = ["Tarkan", "Ezhel", "Madrigal", "Sezen Aksu", "Bad Bunny", "Daft Punk"]
 # Ses haritasında adı yazılan türler (birbirinden uzak, tanıdık türler)
 HARITA_TURLERI = ["turkish", "metal", "classical", "sleep", "hip-hop", "latino", "techno",
@@ -149,7 +150,8 @@ def sec(track_id: str, kaynak: str = "arama") -> None:
     başa kaydırılır.
     """
     yol = st.session_state.yol
-    st.session_state.yol = yol[:yol.index(track_id) + 1] if track_id in yol else yol + [track_id]
+    yol = yol[:yol.index(track_id) + 1] if track_id in yol else yol + [track_id]
+    st.session_state.yol = yol[-YOL_SINIRI:]
     st.session_state.secili = track_id
     st.session_state.yukari_kaydir = kaynak == "kart"
     if kaynak != "arama":
@@ -182,7 +184,7 @@ if st.session_state.arama.strip():
         with st.container(horizontal=True, gap="small", key="aday_listesi"):
             for aday in adaylar.itertuples():
                 secili_mi = aday.track_id == st.session_state.secili
-                st.button(f"{aday.track_name} — {aday.artists.replace(';', ', ')}",
+                st.button(md_kacis(f"{aday.track_name} — {aday.artists.replace(';', ', ')}"),
                           key=f"aday_{aday.track_id}", on_click=sec, args=(aday.track_id,),
                           type="primary" if secili_mi else "secondary", icon=":material/music_note:")
 
@@ -211,7 +213,7 @@ if len(yol) > 1:
         for i, t in enumerate(gosterilen):
             if i:
                 st.caption("→", width="content")
-            st.button(bulucu.sarki(t)["track_name"], key=f"yol_{t}", type="tertiary", on_click=sec, args=(t, "yol"),
+            st.button(md_kacis(bulucu.sarki(t)["track_name"]), key=f"yol_{t}", type="tertiary", on_click=sec, args=(t, "yol"),
                       disabled=t == secim)
 
 st.write("")

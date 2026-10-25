@@ -106,6 +106,52 @@ def test_yoldaki_bir_sarki_oneri_olarak_secilirse_yol_oraya_kisalir():
     assert at.session_state.yol == [ilk]
 
 
+def _html_metinleri(at):
+    return [h.proto.body for h in at.get("html")]
+
+
+def test_karttan_geciste_sayfa_basina_kaydirma_betigi_bir_kez_eklenir():
+    at = _ac()
+    assert not any("scrollTo" in h for h in _html_metinleri(at))
+    _dugmeler(at, "kart_")[0].click().run()
+    assert sum("scrollTo" in h for h in _html_metinleri(at)) == 1
+    at.slider(key="min_pop").set_value(30).run()  # başka bir etkileşimde betik tekrar eklenmez
+    assert not any("scrollTo" in h for h in _html_metinleri(at))
+
+
+def test_hizli_dene_dugmesi_aramayi_ve_secimi_degistirir():
+    at = _ac()
+    at.button_group(key="ornek_secimi").set_value("Ezhel").run()
+    assert not at.exception
+    assert at.text_input(key="arama").value == "Ezhel"
+    assert len(at.session_state.yol) == 2
+    secili_kart = [h for h in _html_metinleri(at) if h.lstrip().startswith('<div class="secili">')]
+    assert len(secili_kart) == 1 and "Ezhel" in secili_kart[0]
+    assert at.button_group(key="ornek_secimi").value is None  # düğme seçili kalmaz
+
+
+def _yolda_olmayan_oneriye_gec(at):
+    yeni = [k for k in _dugmeler(at, "kart_") if k.key.removeprefix("kart_") not in at.session_state.yol]
+    yeni[0].click().run()
+
+
+def test_uzun_yol_kisaltilarak_gosterilir():
+    at = _ac()
+    for _ in range(7):
+        _yolda_olmayan_oneriye_gec(at)
+    assert not at.exception
+    assert len(at.session_state.yol) == 8
+    assert any(c.value == "…" for c in at.caption)      # ekranda yalnızca son 6 şarkı
+    assert len(_dugmeler(at, "yol_")) == 6
+
+
+def test_yol_sinirdan_uzun_tutulmaz():
+    at = _ac()
+    at.session_state.yol = [f"sahte{i}" for i in range(60)] + [at.session_state.secili]
+    _yolda_olmayan_oneriye_gec(at)
+    assert len(at.session_state.yol) == 50
+
+
 def test_veri_dosyasi_yoksa_okunur_hata_gosteriliyor(monkeypatch, tmp_path):
     # app.py, DEMO_YOLU'nu her çalıştırmada src.oneri'den okur; yolu var olmayan bir dosyaya çeviriyoruz
     monkeypatch.setattr("src.oneri.DEMO_YOLU", tmp_path / "yok.csv.gz")

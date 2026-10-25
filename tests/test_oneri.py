@@ -142,6 +142,8 @@ def test_filtreler_herkesi_elerse_bos_sonuc_doner(bulucu):
     ("Beyoncé", "beyonce"),
     ("Røyksopp", "royksopp"),
     ("Straße", "strasse"),
+    ("Sigur Rós Ágætis byrjun", "sigur ros agaetis byrjun"),
+    ("Þórður Guðmundsson", "thordur gudmundsson"),
     ("  Sezen   Aksu ", "sezen aksu"),
 ])
 def test_sadelestir_harf_isaretlerini_ve_buyuk_harfi_kaldirir(ham, sade):

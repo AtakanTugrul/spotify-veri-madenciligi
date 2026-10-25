@@ -1,7 +1,9 @@
 import base64
 
-from src.arayuz import (RADAR_OZELLIKLERI, neden_cipleri, oneri_basligi, oneri_karti, radar_svg,
-                        secili_sarki_karti, spotify_linki, svg_resim)
+import pytest
+
+from src.arayuz import (RADAR_OZELLIKLERI, md_kacis, neden_cipleri, oneri_basligi, oneri_karti,
+                        radar_svg, secili_sarki_karti, spotify_linki, svg_resim)
 
 PROFIL = {a: 0.5 for a in RADAR_OZELLIKLERI}
 
@@ -76,3 +78,16 @@ def test_oneri_basligi_sorgu_sarkisini_kacislayarak_yazar():
     baslik = oneri_basligi(_oneri(track_name="<b>Kuzu</b>", artists="Tarkan;X"), 8)
     assert "&lt;b&gt;Kuzu&lt;/b&gt;" in baslik and "<b>Kuzu" not in baslik
     assert "Tarkan, X" in baslik and "8 şarkı" in baslik
+
+
+@pytest.mark.parametrize("ham, kacisli", [
+    ("A$AP Rocky", r"A\$AP Rocky"),
+    ("IZ*ONE", r"IZ\*ONE"),
+    ("GROWING UP IS ___", r"GROWING UP IS \_\_\_"),
+    ("01. Moalagh", r"01\. Moalagh"),
+    ("+ (MÁS)", r"\+ \(MÁS\)"),
+    (":material/home:", r"\:material/home\:"),
+    ("Şımarık — Tarkan", "Şımarık — Tarkan"),
+])
+def test_md_kacis_markdown_isaretlerini_kacislar(ham, kacisli):
+    assert md_kacis(ham) == kacisli

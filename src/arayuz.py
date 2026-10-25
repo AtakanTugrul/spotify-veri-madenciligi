@@ -30,6 +30,7 @@ SORGU_RENGI = "#FF7A59"
 ONERI_RENGI = "#3DD6C6"
 
 _SPOTIFY_ID = re.compile(r"[A-Za-z0-9]{22}")
+_MD_OZEL = re.compile(r"([\\`*_{}\[\]()#+\-.!$~|<>:=])")
 
 
 def spotify_linki(track_id: str, embed: bool = False) -> str | None:
@@ -38,6 +39,15 @@ def spotify_linki(track_id: str, embed: bool = False) -> str | None:
         return None
     yol = "embed/track" if embed else "track"
     return f"https://open.spotify.com/{yol}/{track_id}"
+
+
+def md_kacis(metin: str) -> str:
+    """Streamlit'in Markdown olarak çizdiği etiketler (ör. st.button) için kaçış.
+
+    Veri setinde "A$AP Rocky", "IZ*ONE", "GROWING UP IS _____" gibi adlar var; kaçışsız
+    yazılırsa $ formül, * ve _ italik olarak çizilir.
+    """
+    return _MD_OZEL.sub(r"\\\1", str(metin))
 
 
 def _nokta(i: int, n: int, r: float, merkez: float) -> tuple[float, float]:

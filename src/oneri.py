@@ -29,7 +29,8 @@ def demo_tablosu(temiz: pd.DataFrame) -> pd.DataFrame:
 
 # Ayrıştırmayla (NFKD) sadeleşmeyen harfler elle eşlenir; Türkçe I/İ/ı'nın hepsi "i" olur
 _OZEL_HARFLER = str.maketrans({"ı": "i", "I": "i", "İ": "i", "ø": "o", "Ø": "o", "æ": "ae", "Æ": "ae",
-                               "œ": "oe", "Œ": "oe", "ß": "ss", "đ": "d", "Đ": "d", "ł": "l", "Ł": "l"})
+                               "œ": "oe", "Œ": "oe", "ß": "ss", "đ": "d", "Đ": "d", "ł": "l", "Ł": "l",
+                               "ð": "d", "Ð": "d", "þ": "th", "Þ": "th", "ħ": "h", "Ħ": "h", "ŧ": "t", "Ŧ": "t"})
 
 
 def sadelestir(metin: str) -> str:
